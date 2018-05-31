@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 import { styles } from "./Styles";
+import firebase from 'react-native-firebase';
 
 const instructions = Platform.select({
   ios: 'Press Cmd+R to reload,\n' +
@@ -12,6 +13,11 @@ const instructions = Platform.select({
 type Props = {};
 export default class App extends Component<Props> {
   render() {
+
+
+    const enabled = firebase.messaging().hasPermission();
+
+
     return (
       <View style={styles.container}>
         <Text style={styles.welcome}>
