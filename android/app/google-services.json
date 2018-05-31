@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "261315763052",
+    "firebase_url": "https://twitch-notification-12e6a.firebaseio.com",
+    "project_id": "twitch-notification-12e6a",
+    "storage_bucket": "twitch-notification-12e6a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:261315763052:android:e4895922a1ddceb9",
+        "android_client_info": {
+          "package_name": "com.twitchproject"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "261315763052-40ofqkshu4igse5ft97u8vf1jktsa8f0.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "261315763052-40ofqkshu4igse5ft97u8vf1jktsa8f0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBluEuduq5FOb9lkRVv6Mlj1kFyrLPUnrY"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
