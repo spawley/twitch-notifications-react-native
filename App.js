@@ -18,11 +18,19 @@ export default class App extends Component<Props> {
 
     console.log(firebase.messaging().getToken());
 
+    // firebase.database().ref('test').push({
+    //   testId: "5"
+    // })
 
+    // firebase.messaging().onMessage((message) => {
+    //     console.log(message);
+    //     console.log("ddd");
+    // });
 
-    firebase.messaging().onMessage((message) => {
-        console.log(message);
-        console.log("ddd");
+    firebase.firestore().collection('todos');
+
+    firebase.notifications().onNotification((notification) => {
+      console.log(notification);
     });
 }
 
