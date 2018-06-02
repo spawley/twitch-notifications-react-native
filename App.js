@@ -16,8 +16,37 @@ export default class App extends Component<Props> {
 
   componentDidMount() {
 
-    console.log(firebase.messaging().getToken());
 
+    let userId = "unknown";
+
+    //todo: keep track that this is already done (only perform once)
+    firebase.messaging().getToken().then((x) => {
+      console.log(x);
+
+      userId = x;
+
+      firebase.firestore().collection('users').doc(x).set({
+        userId: x
+      });
+
+
+      firebase.firestore().collection('subscribedTo').add({
+        userId,
+        streamer: "Shroud",
+        game: "fortnite"
+      });
+    });
+
+
+    // https://api.twitch.tv/helix/users?login=<Channel-Name> - determine if exists
+
+
+    firebase.firestore().collection('streamers').doc("Shroud").set({
+      name: "Shroud"
+    });
+
+
+    
     // firebase.database().ref('test').push({
     //   testId: "5"
     // })
@@ -26,8 +55,6 @@ export default class App extends Component<Props> {
     //     console.log(message);
     //     console.log("ddd");
     // });
-
-    firebase.firestore().collection('todos');
 
     firebase.notifications().onNotification((notification) => {
       console.log(notification);
