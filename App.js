@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
-import { Platform, StyleSheet, Text, View } from 'react-native';
+import { Platform, StyleSheet, Text, View, TextInput } from 'react-native';
 import { styles } from "./Styles";
 import firebase from 'react-native-firebase';
 import type, { RemoteMessage } from 'react-native-firebase';
+import TimerMixin from 'react-timer-mixin';
 
 const instructions = Platform.select({
   ios: 'Press Cmd+R to reload,\n' +
@@ -12,10 +13,17 @@ const instructions = Platform.select({
 });
 
 type Props = {};
+
 export default class App extends Component<Props> {
 
-  componentDidMount() {
+  constructor(props) {
+    super(props);
+    this.state = {
+       text: 'Enter Streamer Name Here'
+      };
+  }
 
+  componentDidMount() {
 
     let userId = "unknown";
 
@@ -30,20 +38,25 @@ export default class App extends Component<Props> {
       });
 
 
-      firebase.firestore().collection('subscribedTo').add({
-        userId,
-        streamer: "Shroud",
-        game: "fortnite"
-      });
+      // firebase.firestore().collection('subscribedTo').add({
+      //   userId,
+      //   streamer: "Shroud",
+      //   streamerId: "37402112",
+      //   game: "fortnite",
+      //   gameId: "33214"
+      // });
     });
 
 
     // https://api.twitch.tv/helix/users?login=<Channel-Name> - determine if exists
 
 
-    firebase.firestore().collection('streamers').doc("Shroud").set({
-      name: "Shroud"
-    });
+    // firebase.firestore().collection('streamers').doc("Chad").set({
+    //   streamerId: "51847140",
+    //   name: "Chad",
+    //   gameId: "33214",
+    //   isOnline: false
+    // });
 
 
     
@@ -51,11 +64,15 @@ export default class App extends Component<Props> {
     //   testId: "5"
     // })
 
-    // firebase.messaging().onMessage((message) => {
-    //     console.log(message);
-    //     console.log("ddd");
-    // });
 
+  
+    //Data    
+    firebase.messaging().onMessage((message) => {
+        console.log(message);
+        console.log("ddd");
+    });
+
+    //Notifications
     firebase.notifications().onNotification((notification) => {
       console.log(notification);
     });
@@ -68,7 +85,7 @@ export default class App extends Component<Props> {
     return (
       <View style={styles.container}>
         <Text style={styles.welcome}>
-          Welcome to React Native!!
+          Welcome to the Fortnite Twitch Notification App!
         </Text>
         <Text style={styles.instructions}>
           To get started, edit App.js
@@ -76,14 +93,24 @@ export default class App extends Component<Props> {
         <Text style={styles.instructions}>
           {instructions}
         </Text>
+        <TextInput
+          style={{height: 40, width: 225, borderColor: 'gray', borderWidth: 1}}
+          onChangeText={() => this.handleStreamerLookup()}
+          defaultValue={this.state.text}
+        />
       </View>
-    );
+      
+    ); 
+  }
+
+  handleStreamerLookup() {
+    console.log("jjj");
+    setTimeout(function() { this.setState({text: "kkjhg"}); }.bind(this), 3000);
   }
 
    async test() {
     const enabled = await firebase.messaging().hasPermission();
 
     console.log(enabled);
-
   }
 }
