@@ -136,7 +136,7 @@ export default class App extends Component<Props> {
     return (
       <View style={styles.container}>
         <Text style={styles.welcome}>
-          Welcome to the Fortnite Twitch Notification App!
+          Welcome to the Fortnite Twitch Notification App!!
         </Text>
         <Text style={styles.instructions}>
           {this.state.streamerId ? "Valid" : "Does not exist"}
