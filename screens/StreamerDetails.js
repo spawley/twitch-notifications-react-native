@@ -1,6 +1,8 @@
     import React from 'react';
     import Icon from 'react-native-vector-icons/FontAwesome';
     import { Platform, StyleSheet, Text, View, TextInput, ActivityIndicator, AsyncStorage, ToastAndroid, FlatList, TouchableOpacity} from 'react-native';
+    import Button from 'react-native-button';
+
 
     export default class StreamerDetails extends React.Component {
 
@@ -11,15 +13,21 @@
            acceptInput: false,
            loading: false,
            timeout: null,
-           multipleResults: null
+           multipleResults: null,
+           showGameSubscribeButton: false,
+           gameSelected: null,
+           gamesSubscribedTo: [{}]
           };
       }
 
       static navigationOptions = {
-        title: 'Modal',
+        title: 'Streamer',
       };
 
       componentDidMount() {
+
+                AsyncStorage.removeItem('gamesSubscribedTo');
+
 
         const itemId = this.props.navigation.getParam('streamerId', 'NO-ID');
         console.log(itemId);
@@ -32,6 +40,27 @@
 
           this.setState({
             streamer: newSubArray[0]
+          });
+        });
+
+        AsyncStorage.getItem('gamesSubscribedTo')
+        .then((item) => {
+
+          console.log(item);
+
+          const gameArray = item 
+            ? JSON.parse(item) 
+            : [{
+                id: itemId,
+                games: []
+              }]
+          const newGameArray = gameArray.filter(e => e.id === itemId);
+
+          console.log(newGameArray);
+
+
+          this.setState({
+            gamesSubscribedTo: newGameArray[0]
           });
         });
       }
@@ -93,6 +122,21 @@
                     multipleResults: resultArray
                   });
                 }
+                else if(result.games.length === 1) {
+
+                  let gameSelected = {
+                    id: result.games[0]._id.toString(),
+                    name: result.games[0].name
+                  }
+
+                  this.setState({
+                    gameSelected: JSON.stringify(gameSelected),
+                    showGameSubscribeButton: true
+                  });
+                }
+                else {
+                  console.log("Nothing");
+                }
              })
              .catch((error) => {
                 console.error(error);
@@ -100,6 +144,27 @@
             }, 800),
           })
         }
+      }
+
+      addGame() {
+
+        console.log(JSON.parse(this.state.gameSelected));
+
+        const gameSelected = JSON.parse(this.state.gameSelected);
+        const gamesSubscribedTo = this.state.gamesSubscribedTo;
+
+        if (gamesSubscribedTo.games) {
+          gamesSubscribedTo.games.push(gameSelected);
+        }
+        else {
+          gamesSubscribedTo.games = [gameSelected];
+        }
+
+        console.log(gamesSubscribedTo);
+
+        AsyncStorage.setItem('gamesSubscribedTo', JSON.stringify(gamesSubscribedTo))
+        .then(this.setState({gamesSubscribedTo: gamesSubscribedTo}))
+        .catch(error => console.log('error saving data'));
       }
 
       render() {
@@ -141,6 +206,18 @@
                         />
                         : null
                     }
+                    {
+                      this.state.showGameSubscribeButton
+                        ? <Button
+                            containerStyle={{padding:8, paddingTop:5.5, height:30, width:60, overflow:'hidden', borderRadius:4, backgroundColor: 'blue', marginTop:5}}
+                            disabledContainerStyle={{backgroundColor: 'grey'}}
+                            style={{fontSize: 14, color: 'green'}}
+                            onPress={() => this.addGame()}
+                          >
+                            Add
+                        </Button>
+                        : null
+                  }
                   </View>
             }
 
@@ -159,7 +236,7 @@
                       }}>
                       <View style={{marginTop:25, flexDirection: 'row', width:"95%", flexDirection: 'row', justifyContent: 'flex-start'}}>
                         <View style={{flex: 1}}>
-                          <Text style={{fontSize: 20, padding:10}}>{item.name}</Text>
+                          <Text style={{fontSize: 14, padding:10}}>{item.name}</Text>
                         </View>
                       </View>
                       </TouchableOpacity>
