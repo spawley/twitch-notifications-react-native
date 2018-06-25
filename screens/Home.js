@@ -136,7 +136,7 @@ export default class App extends Component<Props> {
     return (
       <View style={styles.container}>
         <Text style={styles.welcome}>
-          Welcome to the Fortnite Twitch Notification App!!
+          Welcome to the Fortnite Twitch Notification App!!!!
         </Text>
         <Text style={styles.instructions}>
           {this.state.streamerId ? "Valid" : "Does not exist"}
@@ -189,6 +189,8 @@ export default class App extends Component<Props> {
 
               this.props.navigation.navigate('StreamerDetails', {
                 streamerId: item.id,
+                streamerName: item.name,
+                userId: this.state.userId
               });
 
             }}>
@@ -265,7 +267,7 @@ export default class App extends Component<Props> {
       firebase.firestore().collection('streamers').doc(this.state.streamerId).set({
         streamerId: this.state.streamerId,
         name: this.state.streamerNameInput,
-        gameId: "33214",
+        gameId: "33214", //fix this
         isOnline: false
       });
 
@@ -279,13 +281,13 @@ export default class App extends Component<Props> {
 
             console.log("worked");
       
-            firebase.firestore().collection('subscribedTo').add({
-              userId: this.state.userId,
-              streamer: this.state.streamerNameInput,
-              streamerId: this.state.streamerId,
-              game: "Fortnite",
-              gameId: "33214"
-            });
+            // firebase.firestore().collection('subscribedTo').add({
+            //   userId: this.state.userId,
+            //   streamer: this.state.streamerNameInput,
+            //   streamerId: this.state.streamerId,
+            //   game: "Fortnite",
+            //   gameId: "33214"
+            // });
 
             const streamerData = {
               id: this.state.streamerId,

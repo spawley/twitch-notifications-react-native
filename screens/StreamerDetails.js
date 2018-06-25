@@ -2,46 +2,42 @@
     import Icon from 'react-native-vector-icons/FontAwesome';
     import { Platform, StyleSheet, Text, View, TextInput, ActivityIndicator, AsyncStorage, ToastAndroid, FlatList, TouchableOpacity} from 'react-native';
     import Button from 'react-native-button';
+    import { HeaderBackButton } from 'react-navigation';
+    import firebase from 'react-native-firebase';
+
 
 
     export default class StreamerDetails extends React.Component {
 
       constructor(props) {
         super(props);
+        this.navigate = this.props.navigation.navigate;      
         this.state = {
            streamer: null,
+           streamerName: this.props.navigation.getParam('streamerName', 'NO-ID'),
+           streamerId: this.props.navigation.getParam('streamerId', 'NO-ID'),
            acceptInput: false,
            loading: false,
            timeout: null,
            multipleResults: null,
            showGameSubscribeButton: false,
            gameSelected: null,
-           gamesSubscribedTo: [{}]
+           gamesSubscribedTo: {
+              id: this.props.navigation.getParam('streamerId', 'NO-ID'),
+              games: []
+            },
+           allSubscriptions: []
           };
       }
 
-      static navigationOptions = {
+      static navigationOptions = ({ navigation }) => ({
         title: 'Streamer',
-      };
+        headerLeft: <HeaderBackButton onPress={() => navigation.goBack(null)} />
+      })
 
       componentDidMount() {
 
-                AsyncStorage.removeItem('gamesSubscribedTo');
-
-
-        const itemId = this.props.navigation.getParam('streamerId', 'NO-ID');
-        console.log(itemId);
-
-        AsyncStorage.getItem('streamersSubscribedTo')
-        .then((item) => {
-
-          const subArray = item ? JSON.parse(item) : []
-          const newSubArray = subArray.filter(e => e.id === itemId);
-
-          this.setState({
-            streamer: newSubArray[0]
-          });
-        });
+        // AsyncStorage.removeItem('gamesSubscribedTo');
 
         AsyncStorage.getItem('gamesSubscribedTo')
         .then((item) => {
@@ -51,16 +47,26 @@
           const gameArray = item 
             ? JSON.parse(item) 
             : [{
-                id: itemId,
+                id: this.props.navigation.getParam('streamerId', 'NO-ID'),
                 games: []
               }]
-          const newGameArray = gameArray.filter(e => e.id === itemId);
+             
+
+          console.log(gameArray);
+
+          const newGameArray = gameArray.filter(e => e.id === this.props.navigation.getParam('streamerId', 'NO-ID'));
 
           console.log(newGameArray);
 
+          let gamesSubscribedTo = this.state.gamesSubscribedTo;
+
+          if(newGameArray.length > 0) {
+            gamesSubscribedTo = newGameArray[0];
+          }
 
           this.setState({
-            gamesSubscribedTo: newGameArray[0]
+            gamesSubscribedTo: gamesSubscribedTo,
+            allSubscriptions: item ? gameArray : []
           });
         });
       }
@@ -119,7 +125,8 @@
                   });
 
                   this.setState({
-                    multipleResults: resultArray
+                    multipleResults: resultArray,
+                    showGameSubscribeButton: true
                   });
                 }
                 else if(result.games.length === 1) {
@@ -129,8 +136,10 @@
                     name: result.games[0].name
                   }
 
+                  console.log("Initial Check: " + result.games[0].name);
+
                   this.setState({
-                    gameSelected: JSON.stringify(gameSelected),
+                    gameSelected: gameSelected,
                     showGameSubscribeButton: true
                   });
                 }
@@ -146,11 +155,18 @@
         }
       }
 
-      addGame() {
+      addGame(item) {
 
-        console.log(JSON.parse(this.state.gameSelected));
+        console.log(item);
 
-        const gameSelected = JSON.parse(this.state.gameSelected);
+        let gameSelected = {
+          id: item.id.toString(),
+          name: item.name
+        }
+
+        // console.log(JSON.parse(this.state.gameSelected));
+
+        // const gameSelected = JSON.parse(this.state.gameSelected);
         const gamesSubscribedTo = this.state.gamesSubscribedTo;
 
         if (gamesSubscribedTo.games) {
@@ -160,31 +176,104 @@
           gamesSubscribedTo.games = [gameSelected];
         }
 
+        console.log("---------------------");
+
+        console.log(this.state.allSubscriptions);
+
+        const newGameArray = this.state.allSubscriptions.filter(e => e.id === this.state.streamerId);
+
+        const excludeCurrentStreamer = this.state.allSubscriptions.filter(e => e.id !== this.state.streamerId);
+
+        console.log(newGameArray);
+
         console.log(gamesSubscribedTo);
 
-        AsyncStorage.setItem('gamesSubscribedTo', JSON.stringify(gamesSubscribedTo))
-        .then(this.setState({gamesSubscribedTo: gamesSubscribedTo}))
+        console.log("---------------------");
+
+
+
+        newGameArray.push(gamesSubscribedTo);
+
+
+        //fix names and everything ****
+        excludeCurrentStreamer.push(newGameArray[0]);
+
+
+        AsyncStorage.setItem('gamesSubscribedTo', JSON.stringify(excludeCurrentStreamer))
+        .then (
+
+          firebase.firestore().collection('subscriptions').add({
+            userId: this.props.navigation.getParam('userId', 'NO-ID'),
+            streamer: this.state.streamerName,
+            streamerId: this.state.streamerId,
+            game: gameSelected.name,
+            gameId: gameSelected.id,
+          }),
+
+          this.setState({
+            gamesSubscribedTo: gamesSubscribedTo,
+            acceptInput: false,
+            showGameSubscribeButton: false
+          })
+        )
         .catch(error => console.log('error saving data'));
       }
 
       render() {
 
-        const streamer = this.state.streamer != null ? this.state.streamer : "nope"
+
+        console.log(this.state.gamesSubscribedTo);
+
+
+        if (this.state.gamesSubscribedTo) {
+          console.log(this.state.gamesSubscribedTo.games);
+        }
+
+        const streamer = this.state.streamerName ? this.state.streamerName : "nope"
 
         return (
 
           <View style={this.styles.container}>
-            <Text style={{fontSize:28}}>{streamer.name}</Text>
+            <Text style={{fontSize:28}}>{streamer}</Text>
 
             {
               this.state.acceptInput === false
-                ? <Icon.Button 
-                    name="plus" 
-                    backgroundColor="#3b5998"
-                    onPress={() => this.setState({acceptInput: true})}
-                  >
-                    Add Game Subscription
-                  </Icon.Button>
+                ? <View>
+                    <Icon.Button 
+                      name="plus" 
+                      backgroundColor="#3b5998"
+                      onPress={() => this.setState({acceptInput: true})}
+                    >
+                      Add Game Subscription
+                    </Icon.Button>
+
+                    {
+                      this.state.gamesSubscribedTo &&
+                       this.state.gamesSubscribedTo.games && 
+                       this.state.gamesSubscribedTo.games.length > 0
+                        ? <FlatList
+                            style={{}}
+                            data={this.state.gamesSubscribedTo.games}
+                            showsVerticalScrollIndicator={false}
+                            renderItem={({item}) =>
+
+                            <TouchableOpacity onPress={
+                              () => {
+                                console.log(item.name);
+                  
+                              }}>
+                              <View style={{marginTop:25, flexDirection: 'row', width:"95%", flexDirection: 'row', justifyContent: 'flex-start'}}>
+                                <View style={{flex: 1}}>
+                                  <Text style={{fontSize: 14, padding:10}}>{item.name}</Text>
+                                </View>
+                              </View>
+                              </TouchableOpacity>
+                            }
+                            keyExtractor={(item, index) => index.toString()}
+                            />
+                        : null
+                    }
+                  </View>
                 : <View
                     style={{
                       flexDirection: 'row',
@@ -208,14 +297,16 @@
                     }
                     {
                       this.state.showGameSubscribeButton
-                        ? <Button
-                            containerStyle={{padding:8, paddingTop:5.5, height:30, width:60, overflow:'hidden', borderRadius:4, backgroundColor: 'blue', marginTop:5}}
-                            disabledContainerStyle={{backgroundColor: 'grey'}}
-                            style={{fontSize: 14, color: 'green'}}
-                            onPress={() => this.addGame()}
-                          >
-                            Add
-                        </Button>
+                        ? <View>
+                            <Button
+                              containerStyle={{padding:8, paddingTop:5.5, height:30, width:60, overflow:'hidden', borderRadius:4, backgroundColor: 'blue', marginTop:5}}
+                              disabledContainerStyle={{backgroundColor: 'grey'}}
+                              style={{fontSize: 14, color: 'green'}}
+                              onPress={() => this.addGame(this.state.gameSelected)}
+                            >
+                              Add
+                            </Button>
+                          </View>
                         : null
                   }
                   </View>
@@ -229,17 +320,36 @@
                     showsVerticalScrollIndicator={false}
                     renderItem={({item}) =>
 
-                    <TouchableOpacity onPress={
-                      () => {
-                        console.log(item.name);
-          
-                      }}>
                       <View style={{marginTop:25, flexDirection: 'row', width:"95%", flexDirection: 'row', justifyContent: 'flex-start'}}>
                         <View style={{flex: 1}}>
                           <Text style={{fontSize: 14, padding:10}}>{item.name}</Text>
                         </View>
+
+                        {
+                          this.state.showGameSubscribeButton
+                            ? <View>
+                                <Button
+                                  containerStyle={{padding:8, paddingTop:5.5, height:30, width:60, overflow:'hidden', borderRadius:4, backgroundColor: 'blue', marginTop:5}}
+                                  disabledContainerStyle={{backgroundColor: 'grey'}}
+                                  style={{fontSize: 14, color: 'green'}}
+                                  onPress={() => {
+
+                                    const gameSelected = {
+                                      id: item._id.toString(),
+                                      name: item.name
+                                    }
+
+                                    this.addGame(gameSelected)
+                                  }
+                                }
+                                >
+                                  Add
+                                </Button>
+                              </View>
+                            : null
+                        }
                       </View>
-                      </TouchableOpacity>
+
                     }
                     keyExtractor={(item, index) => index.toString()}
                     onPress={() => {
@@ -264,17 +374,6 @@
           flex: 1,
           backgroundColor: '#fff',
           alignItems: 'center',
-          justifyContent: 'center',
-        },
-
-        button: {
-          height: 45,
-          width: 350,
-          backgroundColor:"#0075ff",
-          alignItems: 'center',
-          justifyContent: 'center',
-          borderRadius: 10,
-          marginTop: 200,
         }
       })
     }
