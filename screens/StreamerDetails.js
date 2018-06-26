@@ -219,6 +219,53 @@
         .catch(error => console.log('error saving data'));
       }
 
+      removeSubscription(gameId) {
+
+        firebase.firestore().collection('subscriptions')
+        .where('userId', '==', this.props.navigation.getParam('userId', 'NO-ID'))
+        .where('streamerId', '==', this.state.streamerId)
+        .where('gameId', '==', gameId).get()
+          .then(snapshot => {
+            snapshot.forEach(doc => {
+              doc.ref.delete();
+           });
+        })
+        .catch(err => {
+          console.log('Error getting documents', err);
+        });
+
+
+
+        const gameArray = this.state.allSubscriptions.filter(e => e.id === this.state.streamerId);
+
+        //Wont work
+        // const streamerWithRemovedGame = gameArray.filter((e) => {
+        //   return e.games.id !== gameId
+        // });
+
+        console.log(gameArray);
+
+        const streamerWithRemovedGame = gameArray.map((obj) => {
+
+          obj.games = obj.games.filter((game) => {
+            return game.id !== gameId
+          })
+
+          return obj;
+        })
+
+        console.log(streamerWithRemovedGame);
+
+        const excludeCurrentStreamer = this.state.allSubscriptions.filter(e => e.id !== this.state.streamerId);
+
+        excludeCurrentStreamer.push(streamerWithRemovedGame);
+
+        AsyncStorage.setItem('gamesSubscribedTo', JSON.stringify(excludeCurrentStreamer))
+        .then(this.setState({gamesSubscribedTo: excludeCurrentStreamer}))
+        .catch(error => console.log('error saving data'));
+
+      }
+
       render() {
 
 
@@ -234,40 +281,43 @@
         return (
 
           <View style={this.styles.container}>
-            <Text style={{fontSize:28}}>{streamer}</Text>
+            <Text style={{fontSize:28}}>{streamer}</Text> 
 
             {
               this.state.acceptInput === false
-                ? <View>
-                    <Icon.Button 
-                      name="plus" 
-                      backgroundColor="#3b5998"
-                      onPress={() => this.setState({acceptInput: true})}
-                    >
-                      Add Game Subscription
-                    </Icon.Button>
+                ? <View style={{alignItems: 'center'}}>
+                    <View style={{width:200}}>
+                      <Icon.Button 
+                        name="plus"
+                        backgroundColor="#3b5998"
+                        onPress={() => this.setState({acceptInput: true})}
+                      >
+                        Add Game Subscription
+                      </Icon.Button>
+                    </View>
 
                     {
                       this.state.gamesSubscribedTo &&
                        this.state.gamesSubscribedTo.games && 
                        this.state.gamesSubscribedTo.games.length > 0
                         ? <FlatList
-                            style={{}}
+                            style={{width:350}}
                             data={this.state.gamesSubscribedTo.games}
                             showsVerticalScrollIndicator={false}
                             renderItem={({item}) =>
 
-                            <TouchableOpacity onPress={
-                              () => {
-                                console.log(item.name);
-                  
-                              }}>
+
                               <View style={{marginTop:25, flexDirection: 'row', width:"95%", flexDirection: 'row', justifyContent: 'flex-start'}}>
-                                <View style={{flex: 1}}>
-                                  <Text style={{fontSize: 14, padding:10}}>{item.name}</Text>
-                                </View>
+                                  <View style={{flex: 1}}>
+                                    <Text style={{fontSize: 14, padding:10}}>{item.name}</Text>
+                                  </View>
+                                  <Icon 
+                                    style={{fontSize:18}}
+                                    name="trash"
+                                    backgroundColor="#3b5998"
+                                    onPress={() => { this.removeSubscription(item.id)}}
+                                  />
                               </View>
-                              </TouchableOpacity>
                             }
                             keyExtractor={(item, index) => index.toString()}
                             />
