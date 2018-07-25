@@ -5,6 +5,7 @@ import firebase from 'react-native-firebase';
 import type, { RemoteMessage } from 'react-native-firebase';
 import TimerMixin from 'react-timer-mixin';
 import Button from 'react-native-button';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 
 const instructions = Platform.select({
@@ -39,25 +40,13 @@ export default class App extends Component<Props> {
 
     let userId = "unknown";
 
-    // const req = AsyncStorage.getItem('streamersSubscribedTo')
-
-    //     console.log(JSON.stringify(req));
-
-        // const streamers = req ? JSON.parse(req) : []
-
-        // this.setState({streamersSubscribedTo: streamers});
-
-        // AsyncStorage.removeItem('streamersSubscribedTo');
-
-
-        AsyncStorage.getItem('streamersSubscribedTo')
-        .then((item) => {
-          console.log(item);
-            if (item) {
-              this.setState({streamersSubscribedTo: JSON.parse(item)});
-            }
-        });
-
+    AsyncStorage.getItem('streamersSubscribedTo')
+    .then((item) => {
+      console.log(item);
+        if (item) {
+          this.setState({streamersSubscribedTo: JSON.parse(item)});
+        }
+    });
 
     //todo: keep track that this is already done (only perform once)
     firebase.messaging().getToken().then((x) => {
@@ -73,34 +62,8 @@ export default class App extends Component<Props> {
         userId: x
       })
 
-      // firebase.firestore().collection('subscribedTo').add({
-      //   userId,
-      //   streamer: "Shroud",
-      //   streamerId: "37402112",
-      //   game: "fortnite",
-      //   gameId: "33214"
-      // });
     });
 
-
-    // https://api.twitch.tv/helix/users?login=<Channel-Name> - determine if exists
-
-
-    // firebase.firestore().collection('streamers').doc("Chad").set({
-    //   streamerId: "51847140",
-    //   name: "Chad",
-    //   gameId: "33214",
-    //   isOnline: false
-    // });
-
-
-    
-    // firebase.database().ref('test').push({
-    //   testId: "5"
-    // })
-
-
-  
     //Data    
     firebase.messaging().onMessage((message) => {
         console.log(message);
@@ -113,20 +76,6 @@ export default class App extends Component<Props> {
     });
 }
 
-  componentWillUpdate(nextProps, nextState) {
-
-    // if(this.state.streamersSubscribedTo && this.state.streamersSubscribedTo !== nextState.streamersSubscribedTo){
-
-    //   AsyncStorage.getItem('streamersSubscribedTo')
-    //   .then((item) => {
-    //     console.log(item);
-    //       if (item) {
-    //         this.setState({streamersSubscribedTo: JSON.parse(item)});
-    //       }
-    //   });
-    // }
-  }
-
   render() {
 
     const { navigate } = this.props.navigation;
@@ -136,7 +85,7 @@ export default class App extends Component<Props> {
     return (
       <View style={styles.container}>
         <Text style={styles.welcome}>
-          Welcome to the Fortnite Twitch Notification App!!!!
+          Welcome to the Twitch Notification App!
         </Text>
         <Text style={styles.instructions}>
           {this.state.streamerId ? "Valid" : "Does not exist"}
@@ -198,14 +147,12 @@ export default class App extends Component<Props> {
               <View style={{flex: 1}}>
                 <Text style={{fontSize: 20, padding:10}}>{item.name}</Text>
               </View>
-              <Button
-                containerStyle={{padding:8, paddingTop:5.5, height:30, width:100, overflow:'hidden', borderRadius:4, backgroundColor: 'blue', marginTop:5, alignSelf: 'flex-end', position:'relative', right:0}}
-                disabledContainerStyle={{backgroundColor: 'grey'}}
-                style={{fontSize: 14, color: 'green'}}
-                onPress={() => this.removeStreamer(item.id)}
-              >
-                Remove
-              </Button>
+              <Icon 
+                  style={{fontSize:18, marginTop:10}}
+                  name="trash"
+                  backgroundColor="#3b5998"
+                  onPress={() => this.removeStreamer(item.id)}
+                />
             </View>
             </TouchableOpacity>
           }
@@ -280,14 +227,6 @@ export default class App extends Component<Props> {
           if (subArray.filter(e => e.id === this.state.streamerId).length === 0) {
 
             console.log("worked");
-      
-            // firebase.firestore().collection('subscribedTo').add({
-            //   userId: this.state.userId,
-            //   streamer: this.state.streamerNameInput,
-            //   streamerId: this.state.streamerId,
-            //   game: "Fortnite",
-            //   gameId: "33214"
-            // });
 
             const streamerData = {
               id: this.state.streamerId,
@@ -300,10 +239,6 @@ export default class App extends Component<Props> {
             .then(this.setState({streamersSubscribedTo: subArray}))
             .catch(error => console.log('error saving data'));
       
-            // AsyncStorage.setItem('user', JSON.stringify(subArray))
-            // .then((item) => {
-            //   console.log(item);
-            // });
             }
             else {
               console.log("already added");
@@ -342,6 +277,7 @@ export default class App extends Component<Props> {
 
     }
 
+    //Fix this
    async test() {
     const enabled = await firebase.messaging().hasPermission();
 

@@ -176,28 +176,13 @@
           gamesSubscribedTo.games = [gameSelected];
         }
 
-        console.log("---------------------");
-
-        console.log(this.state.allSubscriptions);
-
         const newGameArray = this.state.allSubscriptions.filter(e => e.id === this.state.streamerId);
-
         const excludeCurrentStreamer = this.state.allSubscriptions.filter(e => e.id !== this.state.streamerId);
-
-        console.log(newGameArray);
-
-        console.log(gamesSubscribedTo);
-
-        console.log("---------------------");
-
-
 
         newGameArray.push(gamesSubscribedTo);
 
-
         //fix names and everything ****
         excludeCurrentStreamer.push(newGameArray[0]);
-
 
         AsyncStorage.setItem('gamesSubscribedTo', JSON.stringify(excludeCurrentStreamer))
         .then (
@@ -212,6 +197,8 @@
 
           this.setState({
             gamesSubscribedTo: gamesSubscribedTo,
+            multipleResults: null,
+            gameSelected: null,
             acceptInput: false,
             showGameSubscribeButton: false
           })
@@ -234,18 +221,11 @@
           console.log('Error getting documents', err);
         });
 
-
-
         const gameArray = this.state.allSubscriptions.filter(e => e.id === this.state.streamerId);
-
-        //Wont work
-        // const streamerWithRemovedGame = gameArray.filter((e) => {
-        //   return e.games.id !== gameId
-        // });
-
-        console.log(gameArray);
-
         const streamerWithRemovedGame = gameArray.map((obj) => {
+
+          console.log(JSON.stringify(obj));
+          console.log(gameId);
 
           obj.games = obj.games.filter((game) => {
             return game.id !== gameId
@@ -254,27 +234,20 @@
           return obj;
         })
 
-        console.log(streamerWithRemovedGame);
+        console.log(JSON.stringify(streamerWithRemovedGame[0]));
+
 
         const excludeCurrentStreamer = this.state.allSubscriptions.filter(e => e.id !== this.state.streamerId);
 
-        excludeCurrentStreamer.push(streamerWithRemovedGame);
+        excludeCurrentStreamer.push(streamerWithRemovedGame[0]);
 
         AsyncStorage.setItem('gamesSubscribedTo', JSON.stringify(excludeCurrentStreamer))
-        .then(this.setState({gamesSubscribedTo: excludeCurrentStreamer}))
+        .then(this.setState({gamesSubscribedTo: streamerWithRemovedGame[0]}))
         .catch(error => console.log('error saving data'));
 
       }
 
       render() {
-
-
-        console.log(this.state.gamesSubscribedTo);
-
-
-        if (this.state.gamesSubscribedTo) {
-          console.log(this.state.gamesSubscribedTo.games);
-        }
 
         const streamer = this.state.streamerName ? this.state.streamerName : "nope"
 
@@ -306,13 +279,12 @@
                             showsVerticalScrollIndicator={false}
                             renderItem={({item}) =>
 
-
                               <View style={{marginTop:25, flexDirection: 'row', width:"95%", flexDirection: 'row', justifyContent: 'flex-start'}}>
                                   <View style={{flex: 1}}>
                                     <Text style={{fontSize: 14, padding:10}}>{item.name}</Text>
                                   </View>
                                   <Icon 
-                                    style={{fontSize:18}}
+                                    style={{fontSize:18, marginTop:10}}
                                     name="trash"
                                     backgroundColor="#3b5998"
                                     onPress={() => { this.removeSubscription(item.id)}}
@@ -346,16 +318,15 @@
                         : null
                     }
                     {
-                      this.state.showGameSubscribeButton
+                      this.state.showGameSubscribeButton && this.state.multipleResults === false
                         ? <View>
-                            <Button
-                              containerStyle={{padding:8, paddingTop:5.5, height:30, width:60, overflow:'hidden', borderRadius:4, backgroundColor: 'blue', marginTop:5}}
-                              disabledContainerStyle={{backgroundColor: 'grey'}}
-                              style={{fontSize: 14, color: 'green'}}
-                              onPress={() => this.addGame(this.state.gameSelected)}
-                            >
-                              Add
-                            </Button>
+                              <Icon
+                                name="plus"
+                                backgroundColor="#3b5998"
+                                style={{fontSize:30, color: '#3b5998'}}
+                                onPress={() => this.addGame(this.state.gameSelected)}
+                              >
+                              </Icon>
                           </View>
                         : null
                   }
@@ -378,24 +349,23 @@
                         {
                           this.state.showGameSubscribeButton
                             ? <View>
-                                <Button
-                                  containerStyle={{padding:8, paddingTop:5.5, height:30, width:60, overflow:'hidden', borderRadius:4, backgroundColor: 'blue', marginTop:5}}
-                                  disabledContainerStyle={{backgroundColor: 'grey'}}
-                                  style={{fontSize: 14, color: 'green'}}
-                                  onPress={() => {
+                              <Icon
+                                name="plus"
+                                backgroundColor="#3b5998"
+                                style={{fontSize:30, color: '#3b5998', paddingTop: 5}}
+                                onPress={() => {
 
-                                    const gameSelected = {
-                                      id: item._id.toString(),
-                                      name: item.name
-                                    }
-
-                                    this.addGame(gameSelected)
+                                  const gameSelected = {
+                                    id: item._id.toString(),
+                                    name: item.name
                                   }
+
+                                  this.addGame(gameSelected)
                                 }
-                                >
-                                  Add
-                                </Button>
-                              </View>
+                                }
+                              >
+                              </Icon>
+                            </View>
                             : null
                         }
                       </View>
