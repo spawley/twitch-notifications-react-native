@@ -1,6 +1,6 @@
     import React from 'react';
     import Icon from 'react-native-vector-icons/FontAwesome';
-    import { Platform, StyleSheet, Text, View, TextInput, ActivityIndicator, AsyncStorage, ToastAndroid, FlatList, TouchableOpacity} from 'react-native';
+    import { Platform, StyleSheet, Text, View, TextInput, ActivityIndicator, AsyncStorage, ToastAndroid, FlatList, TouchableOpacity, Keyboard} from 'react-native';
     import Button from 'react-native-button';
     import { HeaderBackButton } from 'react-navigation';
     import firebase from 'react-native-firebase';
@@ -101,6 +101,8 @@
              })
              .then((response) => response ? response.json() : "")
              .then((responseJson) => {
+
+              Keyboard.dismiss();
     
               // const jsonObject = JSON.parse(responseJson);
         
@@ -170,6 +172,12 @@
         const gamesSubscribedTo = this.state.gamesSubscribedTo;
 
         if (gamesSubscribedTo.games) {
+
+          if (gamesSubscribedTo.games.filter(e => e.id === gameSelected.id).length > 0) {
+            ToastAndroid.show('Already tracking that game', ToastAndroid.SHORT);
+            return;
+          }
+
           gamesSubscribedTo.games.push(gameSelected);
         }
         else {

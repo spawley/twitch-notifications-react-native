@@ -1,19 +1,11 @@
 import React, { Component } from 'react';
-import { Platform, StyleSheet, Text, View, TextInput, ActivityIndicator, AsyncStorage, ToastAndroid, FlatList, TouchableOpacity} from 'react-native';
+import { Platform, StyleSheet, Text, View, TextInput, ActivityIndicator, AsyncStorage, ToastAndroid, FlatList, TouchableOpacity, Keyboard} from 'react-native';
 import { styles } from "../Styles";
 import firebase from 'react-native-firebase';
 import type, { RemoteMessage } from 'react-native-firebase';
 import TimerMixin from 'react-timer-mixin';
 import Button from 'react-native-button';
 import Icon from 'react-native-vector-icons/FontAwesome';
-
-
-const instructions = Platform.select({
-  ios: 'Press Cmd+R to reload,\n' +
-    'Cmd+D or shake for dev menu',
-  android: 'Double tap R on your keyboard to reload,\n' +
-    'Shake or press menu button for dev menu',
-});
 
 type Props = {};
 
@@ -37,6 +29,8 @@ export default class App extends Component<Props> {
   }
 
   componentDidMount() {
+
+    console.disableYellowBox = true;
 
     let userId = "unknown";
 
@@ -87,23 +81,22 @@ export default class App extends Component<Props> {
         <Text style={styles.welcome}>
           Welcome to the Twitch Notification App!
         </Text>
-        <Text style={styles.instructions}>
+        {/* <Text style={styles.instructions}>
           {this.state.streamerId ? "Valid" : "Does not exist"}
-        </Text>
-        <Text style={styles.instructions}>
-          {instructions}
-        </Text>
+        </Text> */}
         <View
           style={{
             flexDirection: 'row',
           }}
         >
+
           <TextInput
             style={{height: 40, width: 150}}
             onChangeText={(e) => this.handleStreamerLookup(e)}
             defaultValue={this.state.streamerNameInput}
             placeholder={"Search Streamer Here"}
           />
+
           {
             this.state.loading
               ? <ActivityIndicator
@@ -189,6 +182,8 @@ export default class App extends Component<Props> {
          .then((response) => response ? response.json() : "")
          .then((responseJson) => {
 
+          Keyboard.dismiss();
+
           const jsonObject = JSON.parse(responseJson);
     
             this.setState({
@@ -243,7 +238,7 @@ export default class App extends Component<Props> {
             else {
               console.log("already added");
 
-              ToastAndroid.show('A pikachu appeared nearby !', ToastAndroid.SHORT);
+              ToastAndroid.show('Already tracking that streamer', ToastAndroid.SHORT);
             }
       });
     }
