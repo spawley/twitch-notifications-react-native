@@ -34,7 +34,6 @@ export default class App extends Component<Props> {
   componentDidMount() {
 
     console.disableYellowBox = true;
-
     let userId = "unknown";
 
     AsyncStorage.getItem('streamersSubscribedTo')
@@ -84,9 +83,7 @@ export default class App extends Component<Props> {
         <Text style={styles.welcome}>
           Twitch Notification App
         </Text>
-        {/* <Text style={styles.instructions}>
-          {this.state.streamerId ? "Valid" : "Does not exist"}
-        </Text> */}
+
         <View
           style={{
             flexDirection: 'row',
@@ -125,6 +122,7 @@ export default class App extends Component<Props> {
                />
               : null
           }
+
           {
             this.state.showAddButton
               ? <View><Icon.Button
@@ -137,11 +135,13 @@ export default class App extends Component<Props> {
               : null
           }
         </View>
+
         <FlatList
           style={{width:"95%"}}
           data={this.state.streamersSubscribedTo}
           showsVerticalScrollIndicator={false}
           renderItem={({item}) =>
+
           <TouchableOpacity onPress={
             () => {
               console.log(item.id);
@@ -167,16 +167,12 @@ export default class App extends Component<Props> {
             </TouchableOpacity>
           }
           keyExtractor={item => item.id}
-          onPress={() => {
-            () => {console.log("eeeeeeeeeeeeeeeeee");}
-          }}
         />
       </View>   
     );
   }
   
   handleStreamerLookup(e) {
-    console.log(e);
 
     clearTimeout(this.state.timeout);
 
@@ -201,7 +197,6 @@ export default class App extends Component<Props> {
 
           Keyboard.dismiss();
 
-
           if (responseJson.length > 0) {
 
             const jsonObject = JSON.parse(responseJson);
@@ -212,11 +207,8 @@ export default class App extends Component<Props> {
               loading: false,
               showAddButton: !!responseJson
             })
-    
-            console.log("returned data " + responseJson.toString());
           }
           else {
-            console.log("No result");
 
             ToastAndroid.show('No Results Found', ToastAndroid.SHORT);
 
@@ -251,8 +243,6 @@ export default class App extends Component<Props> {
 
           if (subArray.filter(e => e.id === this.state.streamerId).length === 0) {
 
-            console.log("worked");
-
             const streamerData = {
               id: this.state.streamerId,
               name: this.state.streamerNameInput
@@ -266,7 +256,6 @@ export default class App extends Component<Props> {
       
             }
             else {
-              console.log("already added");
 
               ToastAndroid.show('Already tracking that streamer', ToastAndroid.SHORT);
             }
@@ -298,7 +287,6 @@ export default class App extends Component<Props> {
         .then((item) => {
 
           const subArray = item ? JSON.parse(item) : []
-
           const newSubArray = subArray.filter(e => e.id !== streamerId);
 
           AsyncStorage.setItem('streamersSubscribedTo', JSON.stringify(newSubArray))

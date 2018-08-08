@@ -39,12 +39,8 @@
 
       componentDidMount() {
 
-        // AsyncStorage.removeItem('gamesSubscribedTo');
-
         AsyncStorage.getItem('gamesSubscribedTo')
         .then((item) => {
-
-          console.log(item);
 
           const gameArray = item 
             ? JSON.parse(item) 
@@ -53,13 +49,7 @@
                 games: []
               }]
              
-
-          console.log(gameArray);
-
           const newGameArray = gameArray.filter(e => e.id === this.props.navigation.getParam('streamerId', 'NO-ID'));
-
-          console.log(newGameArray);
-
           let gamesSubscribedTo = this.state.gamesSubscribedTo;
 
           if(newGameArray.length > 0) {
@@ -92,10 +82,7 @@
             loading: true,
             timeout: setTimeout(() => {
     
-              // e = e.replace(/\s/g, '');
-
               const userInput = encodeURI(e);
-
               let url = 'https://us-central1-twitch-notification-12e6a.cloudfunctions.net/gameCheck?game=' + userInput
       
               fetch(url, {
@@ -104,7 +91,7 @@
              .then((response) => response ? response.json() : "")
              .then((responseJson) => {
 
-              Keyboard.dismiss();
+                Keyboard.dismiss();
             
                 this.setState({
                   loading: false,
@@ -114,8 +101,6 @@
                   const result = JSON.parse(responseJson);
 
                   if (result.games.length > 1) {
-                    console.log("Multiple returned, show listview....");
-  
   
                     const resultArray = [];
   
@@ -162,9 +147,6 @@
           name: item.name
         }
 
-        // console.log(JSON.parse(this.state.gameSelected));
-
-        // const gameSelected = JSON.parse(this.state.gameSelected);
         const gamesSubscribedTo = this.state.gamesSubscribedTo;
 
         if (gamesSubscribedTo.games) {
@@ -227,9 +209,6 @@
 
         const gameArray = this.state.allSubscriptions.filter(e => e.id === this.state.streamerId);
         const streamerWithRemovedGame = gameArray.map((obj) => {
-
-          console.log(JSON.stringify(obj));
-          console.log(gameId);
 
           obj.games = obj.games.filter((game) => {
             return game.id !== gameId
@@ -310,6 +289,7 @@
                       defaultValue={this.state.streamerNameInput}
                       placeholder={"Search Game Here"}
                     />
+
                     {
                       this.state.loading
                         ? <ActivityIndicator
@@ -320,6 +300,7 @@
                         />
                         : null
                     }
+
                     {
                       this.state.showGameSubscribeButton && this.state.multipleResults === false
                         ? <View>
@@ -376,9 +357,6 @@
 
                     }
                     keyExtractor={(item, index) => index.toString()}
-                    onPress={() => {
-                      () => {console.log("eeeeeeeeeeeeeeeeee");}
-                    }}
                   />
               : null
             }
