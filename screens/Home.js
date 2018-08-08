@@ -15,16 +15,19 @@ export default class App extends Component<Props> {
     title: "Home Screen"
   }
 
+  textInput: null
+
   constructor(props) {
     super(props);
     this.state = {
+      acceptInput: false,
        streamerNameInput: '',
        timeout: null,
        streamerId: '',
        loading: false,
        showAddButton: false,
        userId: '',
-       streamersSubscribedTo: []
+       streamersSubscribedTo: [],
       };
   }
 
@@ -79,7 +82,7 @@ export default class App extends Component<Props> {
     return (
       <View style={styles.container}>
         <Text style={styles.welcome}>
-          Welcome to the Twitch Notification App!
+          Twitch Notification App
         </Text>
         {/* <Text style={styles.instructions}>
           {this.state.streamerId ? "Valid" : "Does not exist"}
@@ -90,12 +93,27 @@ export default class App extends Component<Props> {
           }}
         >
 
-          <TextInput
-            style={{height: 40, width: 150}}
-            onChangeText={(e) => this.handleStreamerLookup(e)}
-            defaultValue={this.state.streamerNameInput}
-            placeholder={"Search Streamer Here"}
-          />
+          {
+            this.state.acceptInput
+              ? <TextInput
+                  ref={(e) => { this.textInput = e; }}
+                  style={{height: 40, width: 150}}
+                  onChangeText={(e) => this.handleStreamerLookup(e)}
+                  defaultValue={this.state.streamerNameInput}
+                  placeholder={"Search Streamer Here"}
+                />
+              : <View style={{width:140, marginTop:25}}>
+                  <Icon.Button 
+                    name="plus"
+                    backgroundColor="#3b5998"
+                    onPress={() => {
+                      this.setState({acceptInput: true}, () => this.textInput.focus())
+                    }}
+                  >
+                    Add Streamer
+                  </Icon.Button>
+                </View>
+          }
 
           {
             this.state.loading
@@ -109,14 +127,13 @@ export default class App extends Component<Props> {
           }
           {
             this.state.showAddButton
-              ? <Button
-                  containerStyle={{padding:8, paddingTop:5.5, height:30, width:60, overflow:'hidden', borderRadius:4, backgroundColor: 'blue', marginTop:5}}
-                  disabledContainerStyle={{backgroundColor: 'grey'}}
-                  style={{fontSize: 14, color: 'green'}}
+              ? <View><Icon.Button
+                  name="plus"
+                  backgroundColor="#3b5998"
                   onPress={() => this.addStreamer()}
                 >
                   Add
-               </Button>
+               </Icon.Button></View>
               : null
           }
         </View>
@@ -184,7 +201,10 @@ export default class App extends Component<Props> {
 
           Keyboard.dismiss();
 
-          const jsonObject = JSON.parse(responseJson);
+
+          if (responseJson.length > 0) {
+
+            const jsonObject = JSON.parse(responseJson);
     
             this.setState({
               streamerId: jsonObject.id,
@@ -194,7 +214,17 @@ export default class App extends Component<Props> {
             })
     
             console.log("returned data " + responseJson.toString());
-            
+          }
+          else {
+            console.log("No result");
+
+            ToastAndroid.show('No Results Found', ToastAndroid.SHORT);
+
+            this.setState({
+              loading: false,
+            })
+          }
+    
          })
          .catch((error) => {
             console.error(error);
@@ -240,6 +270,12 @@ export default class App extends Component<Props> {
 
               ToastAndroid.show('Already tracking that streamer', ToastAndroid.SHORT);
             }
+
+            this.setState({
+              acceptInput: false,
+              showAddButton: false,
+              streamerNameInput: ''
+            })
       });
     }
 

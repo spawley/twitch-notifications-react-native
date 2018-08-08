@@ -9,6 +9,8 @@
 
     export default class StreamerDetails extends React.Component {
 
+      textInput: null
+
       constructor(props) {
         super(props);
         this.navigate = this.props.navigation.navigate;      
@@ -103,50 +105,46 @@
              .then((responseJson) => {
 
               Keyboard.dismiss();
-    
-              // const jsonObject = JSON.parse(responseJson);
-        
+            
                 this.setState({
                   loading: false,
                 })
-        
-                console.log("returned data " + JSON.stringify(responseJson));
 
-                const result = JSON.parse(responseJson);
+                if (responseJson.length > 0) {
+                  const result = JSON.parse(responseJson);
 
-
-                if(result.games.length > 1) {
-                  console.log("Multiple returned, show listview....");
-
-
-                  const resultArray = [];
-
-                  result.games.map((game) => {
-                    console.log(game);
-                    resultArray.push(game);
-                  });
-
-                  this.setState({
-                    multipleResults: resultArray,
-                    showGameSubscribeButton: true
-                  });
-                }
-                else if(result.games.length === 1) {
-
-                  let gameSelected = {
-                    id: result.games[0]._id.toString(),
-                    name: result.games[0].name
+                  if (result.games.length > 1) {
+                    console.log("Multiple returned, show listview....");
+  
+  
+                    const resultArray = [];
+  
+                    result.games.map((game) => {
+                      console.log(game);
+                      resultArray.push(game);
+                    });
+  
+                    this.setState({
+                      multipleResults: resultArray,
+                      showGameSubscribeButton: true
+                    });
+                  }
+                  else if (result.games.length === 1) {
+  
+                    let gameSelected = {
+                      id: result.games[0]._id.toString(),
+                      name: result.games[0].name
+                    }
+    
+                    this.setState({
+                      gameSelected: gameSelected,
+                      showGameSubscribeButton: true
+                    });
                   }
 
-                  console.log("Initial Check: " + result.games[0].name);
-
-                  this.setState({
-                    gameSelected: gameSelected,
-                    showGameSubscribeButton: true
-                  });
                 }
                 else {
-                  console.log("Nothing");
+                  ToastAndroid.show('No Results Found', ToastAndroid.SHORT);
                 }
              })
              .catch((error) => {
@@ -158,8 +156,6 @@
       }
 
       addGame(item) {
-
-        console.log(item);
 
         let gameSelected = {
           id: item.id.toString(),
@@ -242,11 +238,7 @@
           return obj;
         })
 
-        console.log(JSON.stringify(streamerWithRemovedGame[0]));
-
-
         const excludeCurrentStreamer = this.state.allSubscriptions.filter(e => e.id !== this.state.streamerId);
-
         excludeCurrentStreamer.push(streamerWithRemovedGame[0]);
 
         AsyncStorage.setItem('gamesSubscribedTo', JSON.stringify(excludeCurrentStreamer))
@@ -271,7 +263,9 @@
                       <Icon.Button 
                         name="plus"
                         backgroundColor="#3b5998"
-                        onPress={() => this.setState({acceptInput: true})}
+                        onPress={() => {
+                          this.setState({acceptInput: true}, () => this.textInput.focus())
+                        }}
                       >
                         Add Game Subscription
                       </Icon.Button>
@@ -310,6 +304,7 @@
                     }}
                   >
                     <TextInput
+                      ref={(e) => { this.textInput = e; }}
                       style={{height: 40, width: 130}}
                       onChangeText={(e) => this.handleGameLookup(e)}
                       defaultValue={this.state.streamerNameInput}
@@ -328,13 +323,14 @@
                     {
                       this.state.showGameSubscribeButton && this.state.multipleResults === false
                         ? <View>
-                              <Icon
+                              <Icon.Button
                                 name="plus"
                                 backgroundColor="#3b5998"
                                 style={{fontSize:30, color: '#3b5998'}}
                                 onPress={() => this.addGame(this.state.gameSelected)}
                               >
-                              </Icon>
+                                Add
+                              </Icon.Button>
                           </View>
                         : null
                   }
@@ -357,12 +353,11 @@
                         {
                           this.state.showGameSubscribeButton
                             ? <View>
-                              <Icon
+                              <Icon.Button
                                 name="plus"
                                 backgroundColor="#3b5998"
-                                style={{fontSize:30, color: '#3b5998', paddingTop: 5}}
+                                style={{fontSize:30, color: '#3b5998'}}
                                 onPress={() => {
-
                                   const gameSelected = {
                                     id: item._id.toString(),
                                     name: item.name
@@ -372,7 +367,8 @@
                                 }
                                 }
                               >
-                              </Icon>
+                                Add
+                              </Icon.Button>
                             </View>
                             : null
                         }
