@@ -45,11 +45,11 @@
           const gameArray = item 
             ? JSON.parse(item) 
             : [{
-                id: this.props.navigation.getParam('streamerId', 'NO-ID'),
+                id: this.state.streamerId,
                 games: []
               }]
              
-          const newGameArray = gameArray.filter(e => e.id === this.props.navigation.getParam('streamerId', 'NO-ID'));
+          const newGameArray = gameArray.filter(e => e.id === this.state.streamerId);
           let gamesSubscribedTo = this.state.gamesSubscribedTo;
 
           if(newGameArray.length > 0) {
@@ -68,7 +68,6 @@
       }
 
       handleGameLookup(e) {
-        console.log(e);
 
         clearTimeout(this.state.timeout);
     
@@ -105,7 +104,6 @@
                     const resultArray = [];
   
                     result.games.map((game) => {
-                      console.log(game);
                       resultArray.push(game);
                     });
   
@@ -166,8 +164,6 @@
         const excludeCurrentStreamer = this.state.allSubscriptions.filter(e => e.id !== this.state.streamerId);
 
         newGameArray.push(gamesSubscribedTo);
-
-        //fix names and everything ****
         excludeCurrentStreamer.push(newGameArray[0]);
 
         AsyncStorage.setItem('gamesSubscribedTo', JSON.stringify(excludeCurrentStreamer))
@@ -233,12 +229,12 @@
         return (
 
           <View style={this.styles.container}>
-            <Text style={{fontSize:28}}>{streamer}</Text> 
+            <Text style={{fontSize:28, marginTop:15}}>{streamer}</Text> 
 
             {
               this.state.acceptInput === false
                 ? <View style={{alignItems: 'center'}}>
-                    <View style={{width:200}}>
+                    <View style={{width:200, marginTop:15}}>
                       <Icon.Button 
                         name="plus"
                         backgroundColor="#3b5998"

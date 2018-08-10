@@ -33,12 +33,14 @@ export default class App extends Component<Props> {
 
   componentDidMount() {
 
+    this.checkForPermission();
+
     console.disableYellowBox = true;
     let userId = "unknown";
 
     AsyncStorage.getItem('streamersSubscribedTo')
     .then((item) => {
-      console.log(item);
+
         if (item) {
           this.setState({streamersSubscribedTo: JSON.parse(item)});
         }
@@ -46,37 +48,22 @@ export default class App extends Component<Props> {
 
     //todo: keep track that this is already done (only perform once)
     firebase.messaging().getToken().then((x) => {
-      console.log(x);
 
       userId = x;
 
       firebase.firestore().collection('users').doc(x).set({
-        userId: x
+        userId
       });
 
       this.setState({
-        userId: x
+        userId
       })
-
-    });
-
-    //Data    
-    firebase.messaging().onMessage((message) => {
-        console.log(message);
-        console.log("ddd");
-    });
-
-    //Notifications
-    firebase.notifications().onNotification((notification) => {
-      console.log(notification);
     });
 }
 
   render() {
 
     const { navigate } = this.props.navigation;
-
-    this.test();
 
     return (
       <View style={styles.container}>
@@ -237,7 +224,6 @@ export default class App extends Component<Props> {
 
       AsyncStorage.getItem('streamersSubscribedTo')
       .then((item) => {
-          console.log(item);
 
           const subArray = item ? JSON.parse(item) : []
 
@@ -296,8 +282,7 @@ export default class App extends Component<Props> {
 
     }
 
-    //Fix this
-   async test() {
+   async checkForPermission() {
     const enabled = await firebase.messaging().hasPermission();
 
     console.log(enabled);
