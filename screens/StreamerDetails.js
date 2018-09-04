@@ -298,7 +298,7 @@
                     }
 
                     {
-                      this.state.showGameSubscribeButton && this.state.multipleResults === false
+                      this.state.showGameSubscribeButton && !this.state.multipleResults
                         ? <View>
                               <Icon.Button
                                 name="plus"
